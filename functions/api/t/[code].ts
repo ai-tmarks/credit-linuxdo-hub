@@ -55,7 +55,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     outTradeNo,
     name: name.slice(0, 20),
     money: amount.toFixed(2),
-    notifyUrl: `${origin}/api/tip/callback`,
+    notifyUrl: `${origin}/api/callback`,
     returnUrl: `${origin}/api/tip/return`,
   })
 

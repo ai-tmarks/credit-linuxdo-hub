@@ -66,7 +66,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     outTradeNo: orderNo,
     name: productName,
     money: totalPrice.toFixed(2),
-    notifyUrl: `${origin}/api/card/callback`,
+    notifyUrl: `${origin}/api/callback`,
     returnUrl: `${origin}/card/success?code=${code}&order=${orderNo}`,
   })
 

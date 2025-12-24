@@ -25,8 +25,7 @@ export default function Settings() {
   // 生成的链接
   const generatedUrls = {
     homepage: origin,
-    notify: `${origin}/api/tip/callback`,
-    callback: `${origin}/api/tip/return`,
+    notify: `${origin}/api/callback`,
   }
 
   useEffect(() => {
@@ -107,21 +106,13 @@ export default function Settings() {
                 <Copy className="size-4" />
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50 border border-yellow-200">
               <div>
-                <p className="text-sm font-medium">通知 URL</p>
-                <code className="text-xs text-muted-foreground">{generatedUrls.notify}</code>
+                <p className="text-sm font-medium text-yellow-800">通知 URL（重要！）</p>
+                <code className="text-xs text-yellow-700">{generatedUrls.notify}</code>
+                <p className="text-xs text-yellow-600 mt-1">支付成功后会回调此地址，请务必正确配置</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedUrls.notify, '通知 URL')}>
-                <Copy className="size-4" />
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-              <div>
-                <p className="text-sm font-medium">回调 URI</p>
-                <code className="text-xs text-muted-foreground">{generatedUrls.callback}</code>
-              </div>
-              <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedUrls.callback, '回调 URI')}>
                 <Copy className="size-4" />
               </Button>
             </div>
