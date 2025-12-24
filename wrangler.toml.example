@@ -1,0 +1,18 @@
+name = "credit-hub"
+compatibility_date = "2024-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "credit-hub-db"
+database_id = "your-database-id"
+
+[vars]
+# Linux Do Connect OAuth
+# 在 https://connect.linux.do 创建应用获取
+# 回调地址填写: https://你的域名/api/auth/callback
+LINUXDO_CLIENT_ID = ""
+LINUXDO_CLIENT_SECRET = ""
+
+# JWT (用于会话管理，填写随机字符串)
+JWT_SECRET = ""
+
