@@ -1,4 +1,3 @@
-import { createPaymentParams } from '../../lib/credit'
 import { getCurrentUser } from '../../lib/auth'
 
 interface Env {
@@ -18,8 +17,6 @@ interface CardLink {
   per_user_limit: number
   is_active: number
 }
-
-const CREDIT_API_URL = 'https://credit.linux.do/epay/pay/submit.php'
 
 // POST /api/card/pay - 创建订单并返回支付 URL
 export const onRequestPost: PagesFunction<Env> = async (context) => {
@@ -89,23 +86,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     Math.floor(Date.now() / 1000)
   ).run()
 
-  // 生成商品名称
-  const productName = quantity > 1 ? `${link.title.slice(0, 15)} x${quantity}` : link.title.slice(0, 20)
-
-  // 生成支付参数
-  const paymentParams = await createPaymentParams({
-    pid: settings.epay_pid,
-    secret: settings.epay_key,
-    outTradeNo,
-    name: productName,
-    money: totalPrice.toFixed(2),
-    notifyUrl: `${origin}/api/card/callback`,
-    returnUrl: `${origin}/card/success?code=${code}&order=${outTradeNo}`,
-  })
-
-  // 构建支付 URL
-  const searchParams = new URLSearchParams(paymentParams)
-  const payUrl = `${CREDIT_API_URL}?${searchParams}`
+  // 返回跳转页面 URL（该页面会自动 POST 提交表单到支付平台）
+  const payUrl = `${origin}/api/card/redirect?code=${code}&qty=${quantity}&order=${outTradeNo}`
 
   return Response.json({
     success: true,

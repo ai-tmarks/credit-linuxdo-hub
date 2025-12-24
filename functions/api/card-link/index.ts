@@ -36,9 +36,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     SELECT * FROM card_links WHERE user_id = ? ORDER BY created_at DESC
   `).bind(user.id).all<CardLink>()
 
+  // 为每个链接实时统计销量
+  const linksWithRealSoldCount = []
+  for (const link of links.results || []) {
+    const soldResult = await env.DB.prepare(`
+      SELECT COUNT(*) as count FROM card_orders 
+      WHERE link_id = ? AND status = 'paid'
+    `).bind(link.id).first<{ count: number }>()
+    linksWithRealSoldCount.push({
+      ...link,
+      sold_count: soldResult?.count || 0,
+    })
+  }
+
   return Response.json({
     success: true,
-    data: { links: links.results || [] },
+    data: { links: linksWithRealSoldCount },
   })
 }
 

@@ -46,6 +46,13 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   const user = await getCurrentUser(request, env.JWT_SECRET)
 
+  // 从订单表实时统计销量
+  const soldResult = await env.DB.prepare(`
+    SELECT COUNT(*) as count FROM card_orders 
+    WHERE link_id = ? AND status = 'paid'
+  `).bind(link.id).first<{ count: number }>()
+  const realSoldCount = soldResult?.count || 0
+
   // 检查是否是创建者（管理员视角）
   const isOwner = user?.id === link.user_id
 
@@ -69,8 +76,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     userPurchaseCount = countResult?.count || 0
   }
 
-  // 计算剩余库存
-  const remainingStock = link.total_stock - link.sold_count
+  // 使用实时统计的销量
+  const soldCount = realSoldCount
+  const remainingStock = link.total_stock - soldCount
   const isOneToMany = link.card_mode === 'one_to_many'
   // 一对多模式：total_stock=0 表示不限
   const hasUnlimitedStock = isOneToMany && link.total_stock <= 0
@@ -82,7 +90,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   if (!link.is_active) {
     canBuy = false
     cantBuyReason = '该商品已下架'
-  } else if (isOneToMany && link.total_stock > 0 && link.sold_count >= link.total_stock) {
+  } else if (isOneToMany && link.total_stock > 0 && soldCount >= link.total_stock) {
     // 一对多有限制且已达上限
     canBuy = false
     cantBuyReason = '已售罄'
@@ -102,6 +110,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     data: {
       link: {
         ...link,
+        sold_count: soldCount, // 使用实时统计的销量
         remaining_stock: hasUnlimitedStock ? -1 : remainingStock,
       },
       cards: isOwner ? cards : [],

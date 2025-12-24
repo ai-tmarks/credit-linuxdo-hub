@@ -121,12 +121,20 @@ export default function MyOrders() {
                     <h3 className="font-semibold">{order.link_title}</h3>
                     <p className="text-sm text-muted-foreground">{formatTime(order.paid_at)}</p>
                   </div>
-                  <span className="text-sm font-medium text-primary">{order.amount} 积分</span>
+                  <div className="text-right">
+                    <span className="text-sm font-medium text-primary">{order.amount} 积分</span>
+                    {order.cards.length > 1 && (
+                      <p className="text-xs text-muted-foreground">×{order.cards.length}</p>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {order.cards.map((card, i) => (
                     <div key={i} className="flex items-center justify-between p-2 rounded bg-muted/50">
-                      <code className="text-sm font-mono break-all flex-1 mr-2">{card}</code>
+                      <code className="text-sm font-mono break-all flex-1 mr-2">
+                        {order.cards.length > 1 && <span className="text-muted-foreground mr-1">#{i + 1}</span>}
+                        {card}
+                      </code>
                     </div>
                   ))}
                 </div>
