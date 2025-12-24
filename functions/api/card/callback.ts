@@ -51,13 +51,23 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   // 检查是否已处理过（防止重复回调）
   const existingOrder = await env.DB.prepare(
-    'SELECT id FROM card_orders WHERE out_trade_no = ? AND status = ?'
-  ).bind(outTradeNo, 'paid').first()
+    'SELECT id, buyer_id, buyer_username FROM card_orders WHERE out_trade_no = ?'
+  ).bind(outTradeNo).first<{ id: string; buyer_id: string; buyer_username: string }>()
 
+  // 如果订单已支付，直接返回成功
   if (existingOrder) {
-    console.log('Order already processed:', outTradeNo)
-    return new Response('success')
+    const paidOrder = await env.DB.prepare(
+      'SELECT id FROM card_orders WHERE out_trade_no = ? AND status = ?'
+    ).bind(outTradeNo, 'paid').first()
+    if (paidOrder) {
+      console.log('Order already processed:', outTradeNo)
+      return new Response('success')
+    }
   }
+
+  // 从预创建的订单中获取买家信息
+  const buyerId = existingOrder?.buyer_id || ''
+  const buyerUsername = existingOrder?.buyer_username || ''
 
   // 获取链接信息
   const link = await env.DB.prepare(
@@ -206,21 +216,40 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     WHERE id = ?
   `).bind(quantity, now, link.id).run()
 
-  // 创建订单记录（存储所有卡密ID，用逗号分隔）
-  await env.DB.prepare(`
-    INSERT INTO card_orders (id, link_id, card_id, buyer_id, buyer_username, amount, trade_no, out_trade_no, status, paid_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?)
-  `).bind(
-    crypto.randomUUID(),
-    link.id,
-    cardIds.join(','),
-    '',
-    '',
-    money,
-    tradeNo,
-    outTradeNo,
-    now
-  ).run()
+  // 更新或创建订单记录
+  if (existingOrder) {
+    // 更新预创建的订单
+    await env.DB.prepare(`
+      UPDATE card_orders 
+      SET card_id = ?, amount = ?, trade_no = ?, status = 'paid', paid_at = ?
+      WHERE out_trade_no = ?
+    `).bind(cardIds.join(','), money, tradeNo, now, outTradeNo).run()
+  } else {
+    // 创建新订单（未登录用户）
+    await env.DB.prepare(`
+      INSERT INTO card_orders (id, link_id, card_id, buyer_id, buyer_username, amount, trade_no, out_trade_no, status, paid_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?)
+    `).bind(
+      crypto.randomUUID(),
+      link.id,
+      cardIds.join(','),
+      buyerId,
+      buyerUsername,
+      money,
+      tradeNo,
+      outTradeNo,
+      now
+    ).run()
+  }
+
+  // 更新卡密的买家信息
+  if (buyerId) {
+    for (const cardId of cardIds) {
+      await env.DB.prepare(`
+        UPDATE cards SET buyer_id = ?, buyer_username = ? WHERE id = ?
+      `).bind(buyerId, buyerUsername, cardId).run()
+    }
+  }
 
   // 检查是否售罄，自动关闭
   const shouldCheckSoldOut = !hasUnlimitedStock

@@ -1,58 +1,74 @@
 # Credit Hub
 
-Linux Do 积分打赏链接工具，基于 LINUX DO Credit 平台。
+Linux Do 积分工具平台，基于 LINUX DO Credit 系统，部署在 Cloudflare Pages。
 
 ## 功能
 
-- 使用 Linux Do Connect 登录
-- 创建专属打赏链接
-- 分享链接到 Linux Do 社区
-- 接收佬友打赏
-- 查看收款记录
-
-## 使用流程
-
-1. 使用 Linux Do 账号登录
-2. 创建打赏链接，设置标题和预设金额
-3. 复制链接分享到 Linux Do 帖子、签名或个人主页
-4. 粉丝点击链接，通过 LINUX DO Credit 系统完成打赏
-5. 积分自动到账
+- 🔐 Linux Do Connect 登录
+- 💰 打赏链接 - 创建专属打赏链接，接收佬友打赏
+- 🎴 发卡商城 - 创建商品，付款后自动发放卡密
+- 🎲 抽奖活动 - 创建抽奖，支持定时/人满/手动开奖
+- 📦 我的记录 - 查看购买的卡密和抽奖记录
 
 ## 技术栈
 
-- 前端：Vite + React 19 + TypeScript + React Router 7
+- 前端：Vite + React 19 + TypeScript + Tailwind CSS 4 + shadcn/ui
 - 后端：Cloudflare Pages Functions
-- 数据库：Cloudflare D1 + Drizzle ORM
-- 样式：Tailwind CSS 4 + shadcn/ui
-- 支付：LINUX DO Credit 易支付兼容接口
+- 数据库：Cloudflare D1
+- 支付：LINUX DO Credit 易支付接口
 
-## 开发
+## 部署
+
+本项目部署在 Cloudflare Pages，详细部署教程请查看：
+
+👉 **[部署文档](./docs/DEPLOY.md)**
+
+### 快速开始
 
 ```bash
+# 克隆项目
+git clone <repo-url>
+cd linuxdo-credit-hub
 pnpm install
-pnpm dev              # 前端开发
-pnpm build            # 构建
-pnpm pages:dev        # 本地测试（带 API）
-pnpm pages:deploy     # 部署
+
+# 创建 D1 数据库
+npx wrangler d1 create credit-hub-db
+
+# 配置 wrangler.toml
+cp wrangler.toml.example wrangler.toml
+# 编辑 wrangler.toml 填入数据库 ID
+
+# 初始化数据库
+npx wrangler d1 execute credit-hub-db --remote --file=drizzle/0000_init.sql
+npx wrangler d1 execute credit-hub-db --remote --file=drizzle/0001_red_packets.sql
+npx wrangler d1 execute credit-hub-db --remote --file=drizzle/0002_card_links.sql
+npx wrangler d1 execute credit-hub-db --remote --file=drizzle/0003_lottery.sql
+
+# 部署
+pnpm pages:deploy
 ```
 
 ## 环境变量
 
-### Linux Do Connect（用户登录）
+在 Cloudflare Pages 设置中配置：
 
-- `LINUXDO_CLIENT_ID`
-- `LINUXDO_CLIENT_SECRET`
-- `LINUXDO_REDIRECT_URI`
+| 变量名 | 说明 |
+|--------|------|
+| `LINUXDO_CLIENT_ID` | Linux Do Connect 应用 ID |
+| `LINUXDO_CLIENT_SECRET` | Linux Do Connect 应用密钥 |
+| `LINUXDO_REDIRECT_URI` | 回调地址 `https://域名/api/auth/callback` |
+| `JWT_SECRET` | JWT 签名密钥 |
+| `APP_URL` | 应用地址 |
 
-### LINUX DO Credit（积分支付）
+## 本地开发
 
-在 [集市中心](https://credit.linux.do) 创建应用：
+```bash
+pnpm install
+pnpm dev              # 前端开发
+pnpm pages:dev        # 本地测试（带 API）
+pnpm build            # 构建
+```
 
-- `CREDIT_CLIENT_ID` - 应用 Client ID
-- `CREDIT_CLIENT_SECRET` - 应用 Client Secret
-- 通知地址设置为：`https://你的域名/api/tip/callback`
+## License
 
-### 其他
-
-- `JWT_SECRET` - JWT 签名密钥
-- `APP_URL` - 应用地址
+MIT

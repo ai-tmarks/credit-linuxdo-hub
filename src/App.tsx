@@ -15,6 +15,7 @@ import CardBuy from '@/pages/CardBuy'
 import CardSuccess from '@/pages/CardSuccess'
 import Lotteries from '@/pages/Lotteries'
 import LotteryJoin from '@/pages/LotteryJoin'
+import MyOrders from '@/pages/MyOrders'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/links" element={<TipLinks />} />
             <Route path="/cards" element={<CardLinks />} />
             <Route path="/lotteries" element={<Lotteries />} />
+            <Route path="/my-orders" element={<MyOrders />} />
             <Route path="/red-packets" element={<RedPackets />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

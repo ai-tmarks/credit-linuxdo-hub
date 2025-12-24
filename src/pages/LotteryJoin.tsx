@@ -200,6 +200,9 @@ export default function LotteryJoin() {
                 {lottery.user_prize && (
                   <div className="mt-2 p-3 rounded bg-white font-mono text-sm break-all">{lottery.user_prize}</div>
                 )}
+                <p className="text-xs text-muted-foreground mt-3">
+                  <a href="/my-orders" className="text-primary hover:underline">在「我的记录」中查看</a>
+                </p>
               </div>
             ) : lottery.user_joined ? (
               <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 text-center">

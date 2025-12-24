@@ -154,7 +154,10 @@ export default function CardSuccess() {
             </Button>
 
             <p className="text-xs text-muted-foreground text-center mt-4">
-              请妥善保管您的卡密，关闭页面后可能无法再次查看
+              请妥善保管您的卡密
+            </p>
+            <p className="text-xs text-center mt-2">
+              <a href="/my-orders" className="text-primary hover:underline">登录后可在「我的记录」中查看</a>
             </p>
           </div>
         </div>

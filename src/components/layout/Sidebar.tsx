@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Link2, ExternalLink, Zap, Settings, Gift, CreditCard, Ticket } from 'lucide-react'
+import { LayoutDashboard, Link2, ExternalLink, Zap, Settings, Gift, CreditCard, Ticket, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
@@ -7,6 +7,7 @@ const navigation = [
   { name: '打赏链接', href: '/links', icon: Link2 },
   { name: '发卡商城', href: '/cards', icon: CreditCard },
   { name: '抽奖活动', href: '/lotteries', icon: Ticket },
+  { name: '我的记录', href: '/my-orders', icon: ShoppingBag },
   { name: '红包（开发中）', href: '/red-packets', icon: Gift },
   { name: '设置', href: '/settings', icon: Settings },
 ]

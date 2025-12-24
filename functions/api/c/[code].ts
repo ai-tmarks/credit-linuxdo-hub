@@ -1,7 +1,9 @@
 import { createPaymentParams } from '../../lib/credit'
+import { getCurrentUser } from '../../lib/auth'
 
 interface Env {
   DB: D1Database
+  JWT_SECRET: string
 }
 
 interface CardLink {
@@ -25,6 +27,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   const code = params.code as string
   const url = new URL(request.url)
   const origin = url.origin
+
+  // 获取当前登录用户（可选）
+  const user = await getCurrentUser(request, env.JWT_SECRET)
 
   // 获取购买数量，默认为1，最大10
   const qtyParam = url.searchParams.get('qty')
@@ -64,6 +69,22 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
   // 生成订单号，包含数量信息: CARD_{code}_{qty}_{timestamp}
   const outTradeNo = `CARD_${code}_${quantity}_${Date.now()}`
+
+  // 如果用户已登录，预先创建 pending 订单以保存买家信息
+  if (user) {
+    await env.DB.prepare(`
+      INSERT INTO card_orders (id, link_id, card_id, buyer_id, buyer_username, amount, out_trade_no, status, created_at)
+      VALUES (?, ?, '', ?, ?, ?, ?, 'pending', ?)
+    `).bind(
+      crypto.randomUUID(),
+      link.id,
+      user.id,
+      user.username,
+      totalPrice,
+      outTradeNo,
+      Math.floor(Date.now() / 1000)
+    ).run()
+  }
 
   // 生成商品名称
   const productName = quantity > 1 ? `${link.title.slice(0, 15)} x${quantity}` : link.title.slice(0, 20)
